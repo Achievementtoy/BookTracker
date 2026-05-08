@@ -11,7 +11,10 @@ interface Book {
 }
 
 function App() {
-    const [books, setBooks] = useState<Book[]>(JSON.parse(localStorage.getItem('bookTracker.books')))
+    const [books, setBooks] = useState<Book[]>(() => {
+        const storedBooks = localStorage.getItem('bookTracker.books');
+        return storedBooks ? JSON.parse(storedBooks) : [];
+    });
     const [title, setTitle] = useState('');
     const [author, setAuthor] = useState('');
     const [year, setYear] = useState('');
@@ -38,14 +41,14 @@ function App() {
             author: author.trim() || undefined,
             year: year ? year.trim() : undefined
         };
-        setBooks(prev => [b, ...prev]);
+        setBooks(prev => Array.isArray(prev) ? [b, ...prev] : [b]);
         setTitle(''); setAuthor(''); setYear('');
     }
 
     function addBookFromSearch(b: Book) {
         const exists = books.some(x => (b.sourceId && x.sourceId === b.sourceId) || (x.title === b.title && x.author === b.author));
         if (exists) return;
-        setBooks(prev => [{ ...b, id: `ol-${Date.now()}` }, ...prev]);
+        setBooks(prev => Array.isArray(prev) ? [{ ...b, id: `ol-${Date.now()}` }, ...prev] : [{ ...b, id: `ol-${Date.now()}` }]);
     }
 
     function removeBook(id: string) {
